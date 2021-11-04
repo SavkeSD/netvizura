@@ -1,0 +1,33 @@
+---
+# task file for Common-Role
+
+- name: Update apt packages
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+    dpkg_options: 'allow-releaseinfo-change'
+  become: true    
+
+- name: Install programs
+  apt:
+    name: "{{ apt_packages_netvizura }}"
+    state: latest
+  become: true
+
+- name: Add apt key for PostgresQL
+  apt_key:
+    url: http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc
+    state: present
+  become: yes
+
+- name: Add 3rd-party PostgreSQL PGDG repository
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
+    filename: pgdg
+    update_cache: yes
+    state: present
+  become: yes
+
+- name: Gather family OS and run playbook for distro
+  include: "{{ ansible_distribution_release }}.yml"
+   

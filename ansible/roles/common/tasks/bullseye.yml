@@ -1,0 +1,91 @@
+---
+#  Tasks for Bullseye
+
+- name: Add apt key for Java adoptopenjdk
+  apt_key:
+    url: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+    state: present
+  become: yes
+
+- name: Add Java adoptopenjdk repo
+  apt_repository:
+    repo: deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ bullseye main
+    filename: adoptopenjdk
+    update_cache: yes
+    state: present
+  become: yes
+
+- name: Install adoptopenjdk-8-hotspot
+  apt:
+    name: adoptopenjdk-8-hotspot
+    state: latest
+  become: yes
+
+- name: Prevent java 11 from installing
+  dpkg_selections:
+    name: openjdk
+    selection: hold
+  become: yes  
+
+- name: Install tomcat9
+  apt:
+    name: tomcat9
+    state: latest
+  become: yes
+
+- name: Add java home for tomcat9
+  lineinfile:
+    dest: /etc/default/tomcat9
+    line: JAVA_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
+    state: present
+    insertafter: EOF
+  notify:
+   - Tomcat9 - Restart and enable service
+  become: yes
+
+- name: Install postgresql
+  apt:
+    name:
+      - postgresql
+      - postgresql-client
+  become: true
+  notify:
+    - Postgresql - Restart and enable service
+
+- name: Copy pg_hba.conf file
+  template:
+    src: pg_hba.conf
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  become: yes
+  notify:
+    - Postgresql - Restart and enable service
+
+- name: Ensure /etc/systemd/system/tomcat9.service.d/ exists
+  file:
+    path: /etc/systemd/system/tomcat9.service.d
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Template a file to /etc/file.conf
+  template:
+    src: logging-allow.conf
+    dest: /etc/systemd/system/tomcat9.service.d/logging-allow.conf
+  become: yes
+
+- name: Ensure netvizura folders exists
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: tomcat
+    group: tomcat
+    mode: '0755'
+  with_items:
+    - /etc/.netvizura
+    - /var/lib/netvizura 
+  become: yes
+  notify:
+    - Start and enable tomcat9.service and reload deamon

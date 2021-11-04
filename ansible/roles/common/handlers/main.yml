@@ -1,0 +1,29 @@
+---
+- name: Tomcat9 - Restart and enable service
+  service: 
+    name: tomcat9
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: Tomcat8 - Restart and enable service
+  service: 
+    name: tomcat8
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: Postgresql - Restart and enable service
+  service: 
+    name: postgresql
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: Start and enable tomcat9.service and reload deamon
+  become: yes
+  systemd:
+    name: tomcat9.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

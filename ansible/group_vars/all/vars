@@ -1,0 +1,15 @@
+---
+# vars file for all
+
+apt_packages_netvizura:
+- wget
+- nano
+- vim
+- net-tools
+- unzip
+- curl
+- lsb-release
+- sudo
+- dirmngr
+- software-properties-common
+- fontconfig

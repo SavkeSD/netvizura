@@ -1,0 +1,43 @@
+---
+# Tasks for Stratch
+- name: Install openjdk-8-jdk-headless
+  apt: 
+    name: openjdk-8-jdk-headless
+    state: latest
+  become: yes
+
+- name: Comment line with Assistive technologies
+  replace:
+    path: /etc/java-8-openjdk/accessibility.properties
+    regexp: '^assistive_technologies='
+    replace: '#assistive_technologies='
+  become: yes
+
+- name: Install tomcat8
+  apt:
+    name: tomcat8
+    state: latest
+  become: yes
+  notify:
+    - Tomcat8 - Restart and enable service
+
+- name: Install postgresql
+  apt:
+    name:
+      - postgresql
+      - postgresql-client
+  become: true
+  notify:
+    - Postgresql - Restart and enable service
+
+- name: Copy pg_hba.conf file
+  template:
+   src: pg_hba.conf
+   dest: /etc/postgresql/14/main/pg_hba.conf
+   owner: postgres
+   group: postgres
+   mode: '0640'
+  become: yes
+  notify:
+    - Postgresql - Restart and enable service    
+  
